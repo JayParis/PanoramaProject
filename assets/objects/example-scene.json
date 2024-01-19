@@ -1,0 +1,8 @@
+[
+    {
+        "image_id": 0,
+        "clickable_zones": [
+            {"x": 0.0, "y": 0.0, "z": 0.0, "destination_id": 1}
+        ]
+    }
+]

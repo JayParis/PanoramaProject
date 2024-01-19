@@ -22,6 +22,7 @@
     <canvas id='application'></canvas>
     <script>
         // create a PlayCanvas application
+        var sceneJSON = undefined;
         const canvas = document.getElementById('application');
         canvas.style['-webkit-user-select'] = 'none';
         const app = new pc.Application(canvas, {
@@ -51,19 +52,54 @@
                 { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
             ),
             demoPanoramaTex: new pc.Asset(
-                "Bolt-MatCap",
+                "Demo-Equi-1",
                 "texture",
                 { url: "./assets/textures/Eq_0000.webp" },
                 { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
             ),
+            demoTransitionTex: new pc.Asset(
+                "Demo-Equi-2",
+                "texture",
+                { url: "./assets/textures/Eq_0026.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+            zoneTex: new pc.Asset(
+                "Zone-Texture",
+                "texture",
+                { url: "./assets/textures/Zone.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+
+            wp0: new pc.Asset(
+                "Equi-0",
+                "texture",
+                { url: "./panoramas/0.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+            wp1: new pc.Asset(
+                "Equi-1",
+                "texture",
+                { url: "./panoramas/1.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+            wp2: new pc.Asset(
+                "Equi-2",
+                "texture",
+                { url: "./panoramas/2.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+
             bolt: new pc.Asset("Bolt", "container", {
                 url: "./assets/models/Bolt.glb",
             }),
-            vs: new pc.Asset("Bolt-Vertex-Shader", "shader", {
-                url: "./assets/shaders/bolt_vertex.glsl",
+            viewSphereGLB: new pc.Asset("View-Sphere-GLB", "container", {
+                url: "./assets/models/viewSphere.glb",
             }),
-            fs: new pc.Asset("Bolt-Fragment-Shader", "shader", {
-                url: "./assets/shaders/bolt_fragment.glsl",
+            vs: new pc.Asset("View-Vertex-Shader", "shader", {
+                url: "./assets/shaders/view_vertex.glsl",
+            }),
+            fs: new pc.Asset("View-Fragment-Shader", "shader", {
+                url: "./assets/shaders/view_fragment.glsl",
             }),
             mainScene: new pc.Asset("Main-Scene-Script", "script", {
                 url: "./scripts/main-scene.js",
@@ -77,22 +113,23 @@
             app.assets
         );
         assetListLoader.load(() => {
-
-            app.root.addComponent('script');
-            app.root.script.create("Main-Scene-Script");
-
-            uiGroup.addComponent('script');
-            uiGroup.script.create("mobileSafeArea");
-
-            app.start();
-
-            document.getElementById('splash').style.display = 'none';
-            return; // Remove to enable tools
-            (function(){
-                var a = document.createElement('script');
-                a.src = 'https://yaustar.github.io/playcanvas-devtools/injector.js';
-                document.head.appendChild(a);
-            })();
+            GetSceneDependencies().then(() => {
+                app.root.addComponent('script');
+                app.root.script.create("Main-Scene-Script");
+                
+                uiGroup.addComponent('script');
+                uiGroup.script.create("mobileSafeArea");
+                
+                app.start();
+                
+                document.getElementById('splash').style.display = 'none';
+                return; // Remove to enable tools
+                (function(){
+                    var a = document.createElement('script');
+                    a.src = 'https://yaustar.github.io/playcanvas-devtools/injector.js';
+                    document.head.appendChild(a);
+                })();
+            });
         });
 
         const camera = new pc.Entity('camera');
@@ -130,6 +167,11 @@
         screen.addChild(uiGroup);
 
         //---
+
+        async function GetSceneDependencies(){
+            const response = await fetch('./panoramas/scene-config.json');
+            sceneJSON = await response.json();
+        };
         
     </script>
     <script src='./scripts/ui-input-library.js'></script>
