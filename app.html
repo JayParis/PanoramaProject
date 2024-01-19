@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PWA Canvas</title>
+    
+    <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover' />
+    <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+
+    <link rel="stylesheet" type="text/css" href="./css/appstyles.css">
+    <link rel="manifest" href="./manifest.json">
+    
+    <script src='./scripts/engine.js'></script>
+</head>
+<body>
+    <div id="splash">
+        
+    </div>
+    <canvas id='application'></canvas>
+    <script>
+        // create a PlayCanvas application
+        const canvas = document.getElementById('application');
+        canvas.style['-webkit-user-select'] = 'none';
+        const app = new pc.Application(canvas, {
+            elementInput: new pc.ElementInput(canvas),
+            mouse: new pc.Mouse(canvas),
+            touch: !!('ontouchstart' in window) ? new pc.TouchDevice(canvas) : null,
+            keyboard: new pc.Keyboard(window),
+        });
+
+        var device = pc.Application.getApplication().graphicsDevice;
+        device.maxPixelRatio = window.devicePixelRatio;
+
+        app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+        app.setCanvasResolution(pc.RESOLUTION_AUTO);
+
+        // ensure canvas is resized when window changes size
+        window.addEventListener('resize', () => app.resizeCanvas());
+
+        const assets = {    
+            bpFont: new pc.Asset("Blender-Pro-Font", "font", {
+                url: "./assets/fonts/BlenderPro-Medium.json",
+            }),
+            boltMatCap: new pc.Asset(
+                "Bolt-MatCap",
+                "texture",
+                { url: "./assets/textures/BoltMatCap.jpg" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+            demoPanoramaTex: new pc.Asset(
+                "Bolt-MatCap",
+                "texture",
+                { url: "./assets/textures/Eq_0000.webp" },
+                { type: pc.TEXTURETYPE_RGBP, mipmaps: false }
+            ),
+            bolt: new pc.Asset("Bolt", "container", {
+                url: "./assets/models/Bolt.glb",
+            }),
+            vs: new pc.Asset("Bolt-Vertex-Shader", "shader", {
+                url: "./assets/shaders/bolt_vertex.glsl",
+            }),
+            fs: new pc.Asset("Bolt-Fragment-Shader", "shader", {
+                url: "./assets/shaders/bolt_fragment.glsl",
+            }),
+            mainScene: new pc.Asset("Main-Scene-Script", "script", {
+                url: "./scripts/main-scene.js",
+            }),
+            safeArea: new pc.Asset("Safe-Area-Script", "script", {
+                url: "./scripts/mobile-safe-area.js",
+            }),
+        };
+        const assetListLoader = new pc.AssetListLoader(
+            Object.values(assets),
+            app.assets
+        );
+        assetListLoader.load(() => {
+
+            app.root.addComponent('script');
+            app.root.script.create("Main-Scene-Script");
+
+            uiGroup.addComponent('script');
+            uiGroup.script.create("mobileSafeArea");
+
+            app.start();
+
+            document.getElementById('splash').style.display = 'none';
+            return; // Remove to enable tools
+            (function(){
+                var a = document.createElement('script');
+                a.src = 'https://yaustar.github.io/playcanvas-devtools/injector.js';
+                document.head.appendChild(a);
+            })();
+        });
+
+        const camera = new pc.Entity('camera');
+        camera.addComponent('camera', {
+            fov: 90,
+            projection: pc.PROJECTION_PERSPECTIVE,
+            clearColor: new pc.Color(1, 1, 1) //0.1, 0.1, 0.01
+        });
+        app.root.addChild(camera);
+        camera.setPosition(0, 0, 0);
+        const targetPivotX = new pc.Entity('target-pivot-x');
+        const targetPivotY = new pc.Entity('target-pivot-y');
+        const cameraPivot = new pc.Entity('camera-pivot');
+        cameraPivot.addChild(camera);
+        targetPivotY.addChild(targetPivotX);
+        app.root.addChild(targetPivotY);
+        app.root.addChild(cameraPivot);
+
+        const screen = new pc.Entity();
+        screen.addComponent("screen", {
+            referenceResolution: new pc.Vec2(1280, 720), //1280, 720
+            scaleBlend: 0.5,
+            scaleMode: pc.SCALEMODE_BLEND,
+            screenSpace: true,
+        });
+        app.root.addChild(screen);
+        
+        const uiGroup = new pc.Entity('ui_group');
+        uiGroup.addComponent('element', {
+            type: pc.ELEMENTTYPE_GROUP,
+            anchor: new pc.Vec4(0.0, 0.0, 1.0, 1.0),
+            margin: new pc.Vec4(0.0, 0.0, 0.0, 0.0),
+            pivot: new pc.Vec2(0.0, 0.0), 
+        });
+        screen.addChild(uiGroup);
+
+        //---
+        
+    </script>
+    <script src='./scripts/ui-input-library.js'></script>
+</body>
+</html>
